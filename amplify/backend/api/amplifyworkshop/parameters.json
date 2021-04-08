@@ -1,0 +1,11 @@
+{
+  "AppSyncApiName": "amplifyworkshop",
+  "DynamoDBBillingMode": "PAY_PER_REQUEST",
+  "DynamoDBEnableServerSideEncryption": false,
+  "AuthCognitoUserPoolId": {
+    "Fn::GetAtt": [
+      "authamplifyworkshopf0c9b927",
+      "Outputs.UserPoolId"
+    ]
+  }
+}
