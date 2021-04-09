@@ -4,11 +4,12 @@ import { appSyncClient } from '../client';
 import { listTodos } from '../graphql/queries';
 import { createTodo, deleteTodo } from '../graphql/mutations';
 
-export function getTodos() {
+export function getTodos(variables) {
   return appSyncClient.query({
     query: gql`
       ${listTodos}
     `,
+    variables,
   });
 }
 

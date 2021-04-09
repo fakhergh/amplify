@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   ActivityIndicator,
   View,
@@ -26,6 +26,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   item: {
+    height: 200,
     flexDirection: 'row',
     padding: 8,
     marginVertical: 4,
@@ -44,7 +45,16 @@ export function TodoScreen() {
 
   const queryClient = useQueryClient();
 
-  const { status, data, error } = useGetTodos();
+  const {
+    status,
+    data,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useGetTodos({
+    limit: 5,
+  });
 
   const {
     mutate: createTodoMutation,
@@ -61,6 +71,12 @@ export function TodoScreen() {
     },
     [createTodoMutation],
   );
+
+  const onEndReached = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   // update cache after creation
   useEffect(() => {
@@ -95,8 +111,10 @@ export function TodoScreen() {
     }
   }, [todoFormRef, createTodoSuccess]);
 
+  const list = useMemo(() => data?.pages.flatMap(page => page.items), [data]);
+
   if (status === 'loading') {
-    return <ActivityIndicator size="small" />;
+    return <ActivityIndicator size="small" color="red" />;
   }
 
   if (status === 'error') {
@@ -113,7 +131,7 @@ export function TodoScreen() {
       />
       <FlatList
         style={styles.list}
-        data={data.listTodos.items}
+        data={list}
         keyExtractor={item => item.id}
         renderItem={({ item }) => {
           return (
@@ -128,6 +146,11 @@ export function TodoScreen() {
             </View>
           );
         }}
+        onEndReachedThreshold={0}
+        onEndReached={onEndReached}
+        ListFooterComponent={
+          isFetchingNextPage && <ActivityIndicator size="small" color="red" />
+        }
       />
     </View>
   );
